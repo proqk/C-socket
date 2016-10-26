@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <WinSock2.h>
+#include <winsock.h>
 
 #pragma comment(lib, "wsock32.lib")
 
@@ -10,8 +11,13 @@ int main() {
 	struct sockaddr_in client_addr;
 	int size = sizeof(client_addr);
 
-	char data[100];
-	int datasize = sizeof(data);
+	char data[1024];
+	int ret;
+	FILE *fp;
+	int Timeout = 3000;
+
+	char revdata[100];
+	int datasize = sizeof(revdata);
 
 	if (WSAStartup(WINSOCK_VERSION, &WSAdata) != 0) { //winsock version check
 		printf("WSAStartup failed, %d\n", WSAGetLastError());
@@ -55,21 +61,46 @@ int main() {
 		return 0;
 	}
 
-	if (recv(csocketdescriptor, data, datasize, 0) < datasize) { //data receive
-		printf("Data receive failed, %d", WSAGetLastError());
+	fp = fopen("c:\RecevieData.bin", "w+b");
+
+	if (fp == NULL) {
+		perror("file open error");
+		closesocket(csocketdescriptor);
 		closesocket(socketdescriptor);
 		WSACleanup();
 		return 0;
 	}
 
-	printf("You get data: %s\n", data);
+	setsockopt(csocketdescriptor, SOL_SOCKET, SO_RCVTIMEO, (char*)&Timeout, size);
+
+	while (1) {
+		ret = recv(csocketdescriptor, data, 1024, 0);
+
+		if (ret == 0) break;
+		if (ret == SOCKET_ERROR) {
+			printf("receive error: %u\n", WSAGetLastError());
+			closesocket(csocketdescriptor);
+			closesocket(socketdescriptor);
+			WSACleanup();
+			fclose(fp);
+			return 0;
+		}
+	}
+
+	fwrite(data, 1, ret, fp);
+	printf("You receive %d\n", ret);
+
+	fclose(fp);
+	shutdown(socketdescriptor, SD_BOTH);
+
+
 
 	if (closesocket(csocketdescriptor) != 0 || closesocket(socketdescriptor) != 0) {
 		printf("Remove socket failed, %d", WSAGetLastError());
 		WSACleanup();
 		return 0;
 	}
-
+	 
 	if (WSACleanup() != 0) {
 		printf("WSACleanup failed, %u", WSAGetLastError());
 		return 0;

@@ -1,2 +1,6 @@
 ﻿  server.cpp
+c:\users\yoojin\documents\visual studio 2015\projects\프밍 c프로젝트 server\프밍 c프로젝트 server\server.cpp(64): warning C4129: 'R': 문자 이스케이프 시퀀스를 인식할 수 없습니다.
+c:\users\yoojin\documents\visual studio 2015\projects\프밍 c프로젝트 server\프밍 c프로젝트 server\server.cpp(64): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: 'fopen' 선언을 참조하십시오.
+c:\users\yoojin\documents\visual studio 2015\projects\프밍 c프로젝트 server\프밍 c프로젝트 server\server.cpp(19): warning C4101: 'revdata' :참조되지 않은 지역 변수입니다.
   프밍 C프로젝트 server.vcxproj -> C:\Users\yoojin\Documents\Visual Studio 2015\Projects\프밍 C프로젝트 server\Debug\프밍 C프로젝트 server.exe

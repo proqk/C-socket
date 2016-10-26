@@ -1,4 +1,6 @@
 ﻿  client.cpp
-c:\users\yoojin\documents\visual studio 2015\projects\프밍 c프로젝트\프밍 c프로젝트\client.cpp(26): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+c:\users\yoojin\documents\visual studio 2015\projects\프밍 c프로젝트\프밍 c프로젝트\client.cpp(39): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
   c:\program files (x86)\windows kits\8.1\include\um\winsock2.h(1850): note: 'inet_addr' 선언을 참조하십시오.
+c:\users\yoojin\documents\visual studio 2015\projects\프밍 c프로젝트\프밍 c프로젝트\client.cpp(48): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: 'fopen' 선언을 참조하십시오.
   프밍 C프로젝트.vcxproj -> C:\Users\yoojin\Documents\Visual Studio 2015\Projects\프밍 C프로젝트\Debug\프밍 C프로젝트.exe

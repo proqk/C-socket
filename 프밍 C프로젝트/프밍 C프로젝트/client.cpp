@@ -3,15 +3,23 @@
 
 #pragma comment(lib, "wsock32.lib")
 
-int main() {
+int main(int argc, char *argv[]) {
 	SOCKET socketdescriptor; //socket descriptor
 	WSADATA WSAdata; //winsock data
 	SOCKADDR_IN socketin; //socket struct
 
-	char data[100];
-	fgets(data, sizeof(data), stdin);
+	char data[1024];
+	FILE *fp;
+	int ret, read;
 
-	int datasize = sizeof(data);
+	if (argc < 2) {
+		printf("Write send file name. like 'Hello.txt', 'World.exe'\n");
+	}
+
+	char senddata[100];
+	puts("data: ");
+	fgets(senddata, sizeof(senddata), stdin);
+	int datasize = sizeof(senddata);
 
 	if (WSAStartup(WINSOCK_VERSION, &WSAdata) != 0) { //winsock version check
 		printf("WSAStartup failed, %d\n", WSAGetLastError());
@@ -37,21 +45,47 @@ int main() {
 		return 0;
 	}
 
-	if (send(socketdescriptor, data, datasize, 0) < datasize) { //data send
-		printf("data send failed, %u\n", WSAGetLastError());
+	fp = fopen(argv[1], "rb");
+
+	if (fp == NULL) {
+		perror("file open error");
 		closesocket(socketdescriptor);
 		WSACleanup();
 		return 0;
 	}
 
-	if (closesocket(socketdescriptor) != 0) {
-		printf("remove socket failed, %d", WSAGetLastError()); //if socket can't finish
-		WSACleanup();
-		return 0;
+	while (1) {
+		read = fread(data, 1, 1024, fp);
+
+		if (ferror(fp)) {
+			perror("file read error");
+			fclose(fp);
+			closesocket(socketdescriptor);
+			WSACleanup();
+			return 0;
+		}
+
+		ret = send(socketdescriptor, data, read, 0);
+
+		if (ret == SOCKET_ERROR || ret != read) {
+			printf("data send failed: %u\n", WSAGetLastError());
+			fclose(fp);
+			closesocket(socketdescriptor);
+			WSACleanup();
+			return 0;
+		}
+
+		printf("You send data %d bite,\n", ret);
+		if (feof(fp)) break;
 	}
 
-	data[strlen(data) - 1] = '\0';
-	printf("You send data: %s\n", data);
+	fclose(fp);
+
+	printf("You send %s file\n", argv[1]);
+
+	shutdown(socketdescriptor, SD_BOTH);
+
+
 
 	if (WSACleanup() != 0) {
 		printf("WSACleanup failed, %u", WSAGetLastError());
