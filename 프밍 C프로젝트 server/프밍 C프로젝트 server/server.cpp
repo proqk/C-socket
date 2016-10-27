@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <WinSock2.h>
-#include <winsock.h>
+#include <conio.h>
 
 #pragma comment(lib, "wsock32.lib")
 
@@ -10,14 +10,8 @@ int main() {
 	struct sockaddr_in socketin; //socket struct
 	struct sockaddr_in client_addr;
 	int size = sizeof(client_addr);
-
-	char data[1024];
-	int ret;
-	FILE *fp;
-	int Timeout = 3000;
-
-	char revdata[100];
-	int datasize = sizeof(revdata);
+	char buff[1000], data[1000], ID[100];
+	int timeout = 200, ret;
 
 	if (WSAStartup(WINSOCK_VERSION, &WSAdata) != 0) { //winsock version check
 		printf("WSAStartup failed, %d\n", WSAGetLastError());
@@ -50,7 +44,7 @@ int main() {
 		return 0;
 	}
 
-	printf("Waiting to connect client access... \n");
+	printf("Start Chatting server...\n");
 
 	csocketdescriptor = accept(socketdescriptor, (struct sockaddr*)&client_addr, &size);
 
@@ -61,46 +55,49 @@ int main() {
 		return 0;
 	}
 
-	fp = fopen("c:\RecevieData.bin", "w+b");
+	printf("Write your ID to use in the chatting room");
+	fgets(ID, sizeof(ID), stdin);
+	puts("Write the message and push the enter");
 
-	if (fp == NULL) {
-		perror("file open error");
-		closesocket(csocketdescriptor);
-		closesocket(socketdescriptor);
-		WSACleanup();
-		return 0;
-	}
+	size = sizeof(int);
 
-	setsockopt(csocketdescriptor, SOL_SOCKET, SO_RCVTIMEO, (char*)&Timeout, size);
+	setsockopt(csocketdescriptor, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, size);
 
 	while (1) {
-		ret = recv(csocketdescriptor, data, 1024, 0);
+		if (kbhit()) {
+			fgets(buff, sizeof(buff), stdin);
+			if (strcmp(buff, "END") == 0) {
+				send(socketdescriptor, "END", 3, 0);
+				break;
+			}
 
-		if (ret == 0) break;
-		if (ret == SOCKET_ERROR) {
-			printf("receive error: %u\n", WSAGetLastError());
-			closesocket(csocketdescriptor);
-			closesocket(socketdescriptor);
-			WSACleanup();
-			fclose(fp);
-			return 0;
+			sprintf(data, "%s: %s", ID, buff);
+
+			if (send(csocketdescriptor, data, strlen(data), 0) < strlen(data)) {
+				printf("send failed: %u\n", WSAGetLastError());
+				closesocket(socketdescriptor); closesocket(csocketdescriptor); WSACleanup(); return 0;
+			}
 		}
+
+		memset(data, 0, sizeof data);
+		ret = recv(csocketdescriptor, data, 1000, 0);
+
+		if (ret == 0 || WSAGetLastError() == WSAETIMEDOUT) continue;
+
+		if (ret == SOCKET_ERROR) {
+			printf("recevie failed, %u\n", WSAGetLastError());
+			closesocket(socketdescriptor); closesocket(csocketdescriptor); WSACleanup(); return 0;
+		}
+
+		puts(data);
 	}
-
-	fwrite(data, 1, ret, fp);
-	printf("You receive %d\n", ret);
-
-	fclose(fp);
-	shutdown(socketdescriptor, SD_BOTH);
-
-
 
 	if (closesocket(csocketdescriptor) != 0 || closesocket(socketdescriptor) != 0) {
 		printf("Remove socket failed, %d", WSAGetLastError());
 		WSACleanup();
 		return 0;
 	}
-	 
+
 	if (WSACleanup() != 0) {
 		printf("WSACleanup failed, %u", WSAGetLastError());
 		return 0;
