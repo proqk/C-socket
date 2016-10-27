@@ -1,4 +1,3 @@
 # C-socket
 
-school C project 
-chatting program 
+School C project - Chatting program
